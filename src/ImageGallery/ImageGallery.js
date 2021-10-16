@@ -1,27 +1,82 @@
-import axios from "axios";
 import { Component } from "react";
+import ContentLoader from "../Loader/Loader";
+import ImageGalleryItem from "../ImageGalleryItem/ImageGalleryItem";
+import Button from "../Button/Button";
+import pictureSearchAPI from "../services/pictureSearchAPI";
+import s from "./ImageGallery.module.css";
 
 class ImageGallery extends Component {
   state = {
+    images: [],
+    error: null,
+    status: "idle",
     page: 1,
   };
-  componentDidUpdate(prevProps, prevState) {
-    axios.defaults.baseURL = "https://pixabay.com/api/";
-    const key = "23875883-62ec2e0d3177fc3e314277236";
-    const parameters = `?key=${key}&q=${this.props.query}&per_page=12&page${this.state.page}`;
 
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.query !== this.props.query) {
-      axios.get(parameters).then((data) => console.log(data));
+      this.setState({ status: "pending", images: [] });
+
+      pictureSearchAPI(this.props.query, 1)
+        .then((images) => {
+          this.setState({
+            images: images.data.hits,
+            status: "resolved",
+            page: prevState.page + 1,
+          });
+        })
+        .catch((error) =>
+          this.setState({
+            error: "Can not find any photos for your request",
+            status: "rejected",
+          })
+        );
     }
   }
+
+  onBtnClick = () => {
+    pictureSearchAPI(this.props.query, this.state.page).then((images) => {
+      console.log(images.data.hits);
+
+      this.setState((prevState) => {
+        return {
+          images: [...prevState.images, ...images.data.hits],
+          status: "resolved",
+          page: prevState.page + 1,
+        };
+      });
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  };
+
   render() {
-    return (
-      <ul className="ImageGallery">
-        <li className="ImageGalleryItem">
-          <img src="" alt="" className="ImageGalleryItem-image" />
-        </li>
-      </ul>
-    );
+    const { images, error, status } = this.state;
+
+    if (status === "idle") {
+      return <div className={s.error}>Type some request word</div>;
+    }
+
+    if (status === "pending") {
+      return <ContentLoader />;
+    }
+
+    if (status === "rejected") {
+      return <div className={s.error}>{error}</div>;
+    }
+
+    if (status === "resolved") {
+      return (
+        <>
+          <ul className={s.imageGallery}>
+            <ImageGalleryItem images={images} />
+          </ul>
+          <Button onClick={this.onBtnClick} />
+        </>
+      );
+    }
   }
 }
 
