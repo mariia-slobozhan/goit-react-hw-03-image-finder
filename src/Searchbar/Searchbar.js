@@ -1,4 +1,5 @@
 import { Component } from "react";
+import PropTypes from "prop-types";
 import { AiOutlineSearch } from "react-icons/ai";
 import { toast } from "react-toastify";
 import "../../node_modules/react-toastify/dist/ReactToastify.css";
@@ -24,8 +25,8 @@ class Searchbar extends Component {
   };
   render() {
     return (
-      <header className={s.searchbar} onSubmit={this.handleSubmit}>
-        <form className={s.searchForm}>
+      <header className={s.searchbar}>
+        <form className={s.searchForm} onSubmit={this.handleSubmit}>
           <button type="submit" className={s.searchFormButton}>
             <span className={s.searchFormButtonLabel}>
               <AiOutlineSearch />
@@ -49,3 +50,7 @@ class Searchbar extends Component {
 }
 
 export default Searchbar;
+
+Searchbar.propTypes = {
+  handleFormSubmit: PropTypes.string,
+};

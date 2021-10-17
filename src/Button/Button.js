@@ -1,4 +1,5 @@
 import { Component } from "react";
+import PropTypes from "prop-types";
 import s from "./Button.module.css";
 
 class Button extends Component {
@@ -12,3 +13,7 @@ class Button extends Component {
 }
 
 export default Button;
+
+Button.propTypes = {
+  onBtnClick: PropTypes.func,
+};
